@@ -49,6 +49,3 @@ def get_most_common_opcodes(keep_amt, last_key, malware_path, benign_path):
 	most_common_opcodes[last_key] = keep_amt
 
 	return malware_files, benign_files, most_common_opcodes
-
-def x():
-	return 1, 2, 3
