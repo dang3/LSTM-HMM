@@ -17,7 +17,7 @@ def get_list_of_files(dir):
 	return all_files_sub
 
 # count opcode instance
-def process_handler(file_handler, max_opcode_len):
+def process_handler(file_handler):
 	cur_opcode_len = 0
 
 	for file in file_handler.get_all_files():
@@ -33,24 +33,21 @@ def process_handler(file_handler, max_opcode_len):
 
 				opcode = f.readline()
 
-		if cur_opcode_len <= max_opcode_len:
-			file_handler.append_file(file)
-			
-			if cur_opcode_len > file_handler.get_longest_opcode_seq():
-				file_handler.set_longest_opcode_seq(cur_opcode_len)
+		if cur_opcode_len > file_handler.get_longest_opcode_seq():
+			file_handler.set_longest_opcode_seq(cur_opcode_len)
 
 		cur_opcode_len = 0
 
 
-def get_most_common_opcodes(keep_amt, last_key, malware_path, benign_path, max_opcode_len):
+def get_most_common_opcodes(keep_amt, last_key, malware_path, benign_path):
 	mal_handler = File_Handler(malware_path)
 	ben_handler = File_Handler(benign_path)
 
 	mal_handler.set_all_files(get_list_of_files(malware_path))
 	ben_handler.set_all_files(get_list_of_files(benign_path))
 
-	process_handler(mal_handler, max_opcode_len)
-	process_handler(ben_handler, max_opcode_len)
+	process_handler(mal_handler)
+	process_handler(ben_handler)
 	
 	# sort opcodes in order of frequency (greatest to least)
 	sort_opcodes = sorted(opcodes_list, key=opcodes_list.get, reverse=True)
