@@ -24,4 +24,4 @@ class File_Handler:
 		return self.all_files
 
 	def get_files(self):
-		return self.valid_files
+		return self.all_files
