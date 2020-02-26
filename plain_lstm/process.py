@@ -32,7 +32,8 @@ def process_handler(file_handler):
 					opcodes_list[opcode] = 1
 
 				opcode = f.readline()
-
+		
+				
 		if cur_opcode_len > file_handler.get_longest_opcode_seq():
 			file_handler.set_longest_opcode_seq(cur_opcode_len)
 
@@ -63,3 +64,39 @@ def get_most_common_opcodes(keep_amt, last_key, malware_path, benign_path):
 	most_common_opcodes[last_key] = keep_amt
 
 	return mal_handler, ben_handler, most_common_opcodes
+
+def find_malware_families(dir):
+	families = dict()
+
+	with open(dir, 'r') as file:
+		lines = file.readlines()
+	
+	for line in lines:
+		line = line.split(',')
+		fileName = line[1].strip()
+		family = line[9].strip()
+
+		family = family.replace('\'', '')
+		fileName = fileName.replace('\'', '')
+
+		if family == "NULL":
+			continue
+
+		if family not in families:
+			families[family] = []
+		else:
+			families[family].append(fileName)
+
+
+	for key in families.keys():
+		print("family: {}  num: {}".format(key, len(families[key])))
+
+	return families
+
+
+
+path = "../data/DB_RELEASE1.0.sql"
+
+families = find_malware_families(path)
+
+
