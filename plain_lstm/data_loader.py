@@ -35,7 +35,7 @@ def countOpcodes(dir):
 
 # goes through list of all opcodes, find the most common ones and maps most common (the first 0 to keepAmt)
 # opcodes with an int value, all other opcodes assigned a common number (lastKey)
-def findMostCommonOpcodes(dir, opcodesList, keepAmt, lastKey):
+def findMostCommonOpcodes(dir, keepAmt, lastKey):
     opcodesList = countOpcodes(dir)
 
     sortedOpcodes = sorted(opcodesList, key=opcodesList.get, reverse=True)
@@ -89,9 +89,12 @@ def getMostCommonFamilies(dir, n):
     return listOfFiles
 
 # return trainset from given file directory
-def getTrainData(filesDir, mostCommonOpcodes, maxOpcodeLen, lastKey):
-    files = getListOfFiles(filesDir)
+def getTrainData_benMal(filesDir, commonOpcodes, maxOpcodeLen, lastKey):
+    trainFiles = getListOfFiles(filesDir)
+    return getTrainData(trainFiles, commonOpcodes, maxOpcodeLen, lastKey)
 
+
+def getTrainData(files, mostCommonOpcodes, maxOpcodeLen, lastKey):
     trainSet = list()
 
     for file in files:
@@ -117,25 +120,41 @@ def getTrainData(filesDir, mostCommonOpcodes, maxOpcodeLen, lastKey):
 
     return trainSet
 
-def getTrainData_malware(sqlDir, mostCommonOpcodes, maxOpcodeLen, lastKey, n):
-    mostCommonFams = getMostCommonFamilies(sqlDir, n)
+# returns the most file names containing the opcode data that the model is to be trained on
+# lengths of files corresponding to each malware family are the same to prevent the model
+# from being trained too much on one family of malware
+def getFileNames(mostCommonFams, malwareDir):
+    trainSet = list()
+    trainFilesTemp = list()
+    trainFiles = list()
+
+    zbotLen = 0
+
+    for (key, value) in mostCommonFams.items():
+        for v in value:
+            path = malwareDir + key + "/" + v + ".asm.txt"
+            if os.path.exists(path):
+                trainFilesTemp.append(path)
+
+                if "zbot" in path:
+                    zbotLen += 1
+
+    counter = 0
+    for trainFile in trainFilesTemp:
+        if ('winwebsec' in trainFile and counter < zbotLen) or ('zbot' in trainFile):
+            trainFiles.append(trainFile)
+            if 'winwebsec' in trainFile:
+                counter += 1
+
+    return trainFiles, zbotLen
 
 
+# retrieves training data for binary classification on 2 families of malware
+def getTrainData_malware(sqlDir, allFilesDir, malwareDir, maxOpcodeLen, lastKey, n, keepAmt):
+    commonFams = getMostCommonFamilies(sqlDir, n)
+    trainFiles, numLabels = getFileNames(commonFams, malwareDir)
+    commonOpcodes = findMostCommonOpcodes(allFilesDir, keepAmt, lastKey)
 
-
-
-
-allFilesDir = '../data/samples/'
-malFamFileDir = '../data/DB_RELEASE1.0.sql'
-malwareDir = "../data/malware/"
-benignDir = "../data/benign"
-
-# allFiles = getListOfFiles(allFilesDir)
-# opcodesList = countOpcodes(allFiles)
-# mostCommonOpcodes = findMostCommonOpcodes(opcodesList, 29, 'other')
-malwareFamList = getMalwareFamList(malFamFileDir)
-
-getMalwareFiles(malwareFamList, 2)
-
+    return getTrainData(trainFiles, commonOpcodes, maxOpcodeLen, lastKey), numLabels
 
 
