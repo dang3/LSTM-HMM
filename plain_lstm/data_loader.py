@@ -137,6 +137,7 @@ def getFileNames(mostCommonFams, malwareDir):
                 trainFilesTemp.append(path)
 
                 if "zbot" in path:
+                    print("in")
                     zbotLen += 1
 
     counter = 0
